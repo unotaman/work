@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>還記得...</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC&display=swap');
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f6f2e8;
+      font-family: "Noto Serif TC", serif;
+      overflow: hidden;
+    }
+
+    .fade-out {
+      animation: fadeOut 1s forwards;
+    }
+    @keyframes fadeOut {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-50px); }
+    }
+
+    .fade-in {
+      animation: fadeIn 1s forwards;
+    }
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    .lock-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #ece4d9;
+      text-align: center;
+      z-index: 30;
+    }
+
+    .lock-screen h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+      color: #5c5248;
+      transition: transform 0.5s;
+    }
+
+    .lock-input {
+      padding: 8px;
+      font-size: 16px;
+      letter-spacing: 4px;
+      text-align: center;
+      width: 100px;
+      border: none;
+      border-bottom: 2px solid #888;
+      background: transparent;
+    }
+
+    .easter-egg {
+      display: none;
+      font-size: 14px;
+      color: #a1927b;
+      margin-top: 10px;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    .easter-egg.show {
+      display: block;
+      opacity: 1;
+    }
+
+    .main-scene {
+      display: none;
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(135deg, #ece4d9 0%, #f6f2e8 100%);
+      opacity: 0;
+      background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Cg fill="%23d8cbb3" fill-opacity="0.05"%3E%3Cpath d="M1 1h2v2H1zM5 5h2v2H5zM9 9h2v2H9zM13 13h2v2H13zM17 17h2v2H17zM21 21h2v2H21zM25 25h2v2H25zM29 29h2v2H29zM33 33h2v2H33zM37 37h2v2H37zM41 41h2v2H41zM45 45h2v2H45zM49 49h2v2H49zM53 53h2v2H53zM57 57h2v2H57zM61 61h2v2H61zM65 65h2v2H65zM69 69h2v2H69zM73 73h2v2H73zM77 77h2v2H77zM81 81h2v2H81zM85 85h2v2H85zM89 89h2v2H89zM93 93h2v2H93zM97 97h2v2H97z"/%3E%3C/g%3E%3C/svg%3E');
+    }
+
+    .book {
+      position: absolute;
+      width: 200px;
+      height: 140px;
+      background: #fffdf8;
+      border: 1px solid #a1927b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: bold;
+      color: #5c5248;
+      box-shadow: 8px 8px 20px rgba(0,0,0,0.2);
+      transition: transform 0.3s, box-shadow 0.3s, opacity 0.3s;
+      clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+      background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"%3E%3Cg fill="%23d8cbb3" fill-opacity="0.1"%3E%3Ccircle cx="2" cy="2" r="1"/%3E%3Ccircle cx="6" cy="6" r="1"/%3E%3Ccircle cx="10" cy="10" r="1"/%3E%3Ccircle cx="14" cy="14" r="1"/%3E%3Ccircle cx="18" cy="18" r="1"/%3E%3C/g%3E%3C/svg%3E');
+    }
+
+    .book.active {
+      transform: translate(-50%, -50%) rotate(2deg);
+      z-index: 10;
+      opacity: 1;
+      filter: blur(0);
+    }
+
+    .book.active:hover {
+      transform: translate(-50%, -55%) rotate(0deg);
+      box-shadow: 10px 10px 25px rgba(0,0,0,0.25);
+    }
+
+    .book.depth-1 {
+      transform: translate(-50%, -50%) scale(0.85) rotate(-1deg);
+      opacity: 0.7;
+      filter: blur(0.5px);
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .book.depth-2 {
+      transform: translate(-50%, -50%) scale(0.75) rotate(3deg);
+      opacity: 0.5;
+      filter: blur(1px);
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .book.depth-3 {
+      transform: translate(-50%, -50%) scale(0.65) rotate(-2deg);
+      opacity: 0.3;
+      filter: blur(1.5px);
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .book.depth-4 {
+      transform: translate(-50%, -50%) scale(0.55) rotate(4deg);
+      opacity: 0.2;
+      filter: blur(2px);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .book.faded {
+      opacity: 0.1 !important;
+    }
+
+    .book.active-faded {
+      opacity: 0.5 !important;
+    }
+
+    .book.fly-away {
+      animation: flyAway 1s forwards;
+    }
+
+    @keyframes flyAway {
+      0% { transform: translate(-50%, -50%) rotate(2deg); opacity: 1; }
+      100% { transform: translate(-50%, -200%) rotate(10deg); opacity: 0; }
+    }
+
+    .book.appear {
+      animation: appear 0.5s forwards;
+    }
+
+    @keyframes appear {
+      0% { transform: translate(-50%, -50%) scale(0.85) rotate(-1deg); opacity: 0.7; filter: blur(0.5px); }
+      100% { transform: translate(-50%, -50%) rotate(2deg); opacity: 1; filter: blur(0); }
+    }
+
+    .text-inner {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      max-width: 80%;
+      text-align: center;
+      font-size: 20px;
+      line-height: 1.8;
+      color: #5c5248;
+      z-index: 15;
+    }
+
+    .text-inner.show {
+      display: block;
+    }
+
+    .text-inner span {
+      display: inline-block;
+    }
+
+    .text-inner.show span {
+      animation: burstIn 0.6s forwards;
+    }
+
+    @keyframes burstIn {
+      0% { transform: translate(0, 0) scale(0); opacity: 0; }
+      70% { transform: translate(0, 0) scale(1.1); opacity: 1; }
+      100% { transform: translate(0, 0) scale(1); opacity: 1; }
+    }
+
+    .text-inner.closing span {
+      animation: scatterOut 1.5s forwards;
+    }
+
+    @keyframes scatterOut {
+      0% { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(calc(100vw * (var(--rand-x) - 0.5)), calc(100vh * (var(--rand-y) - 0.5))) rotate(calc(var(--rand-rot) * 1deg)); opacity: 0; }
+    }
+
+    .close-hint {
+      display: none;
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 16px;
+      color: #5c5248;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    .close-hint.show {
+      display: block;
+      opacity: 0.7;
+    }
+
+    .birthday-message {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 36px;
+      font-weight: bold;
+      color: #5c5248;
+      text-align: center;
+      z-index: 20;
+    }
+
+    .birthday-message.show {
+      display: block;
+      animation: fadeIn 1s forwards;
+    }
+  </style>
+</head>
+<body>
+
+<audio id="bgm" loop>
+  <source src="assets/lofi-295209.mp3" type="audio/mpeg">
+</audio>
+
+<div class="lock-screen" id="lockScreen">
+  <h2 id="lockText">不知道你還記不記得我送你的第一份禮物在幾月幾號</h2>
+  <p id="lockSub">不記得的話這個禮物也不給你看了。</p>
+  <input id="passwordInput" class="lock-input" maxlength="4" placeholder="____">
+  <p id="easterEgg" class="easter-egg">不是結算大禮包!!!還有一個，在10月底，跟麥當勞有關係的，快去找!(找不到再問我唄)</p>
+</div>
+
+<div class="main-scene" id="mainScene">
+  <div class="book active" id="book1" style="left: 50%; top: 40%;" onclick="openText(1)">九月...</div>
+  <div class="book depth-1" id="book2" style="left: 30%; top: 60%;" onclick="openText(2)">十月...</div>
+  <div class="book depth-2" id="book3" style="left: 70%; top: 30%;" onclick="openText(3)">十一月！</div>
+  <div class="book depth-3" id="book4" style="left: 20%; top: 20%;" onclick="openText(4)">十二月</div>
+  <div class="book depth-4" id="book5" style="left: 80%; top: 50%;" onclick="openText(5)">跨年！！</div>
+  <div class="book depth-4" id="book6" style="left: 40%; top: 70%;" onclick="openText(6)">二月?</div>
+  <div class="book depth-3" id="book7" style="left: 60%; top: 20%;" onclick="openText(7)">三月:/</div>
+  <div class="book depth-2" id="book8" style="left: 25%; top: 45%;" onclick="openText(8)">現在</div>
+  <div class="book depth-1" id="book9" style="left: 75%; top: 65%;" onclick="openText(9)">我想說</div>
+  <div class="book depth-2" id="book10" style="left: 45%; top: 25%;" onclick="openText(10)">最後最後!</div>
+  <div class="text-inner" id="textInner"></div>
+  <div class="close-hint" id="closeHint">點擊關閉</div>
+  <div class="birthday-message" id="birthdayMessage">陳預期，生日快樂！！</div>
+</div>
+
+<script>
+  const correctPassword = "1024";
+  const easterEggPassword = "0104";
+  const input = document.getElementById("passwordInput");
+  const lockScreen = document.getElementById("lockScreen");
+  const mainScene = document.getElementById("mainScene");
+  const textInner = document.getElementById("textInner");
+  const closeHint = document.getElementById("closeHint");
+  const easterEgg = document.getElementById("easterEgg");
+  const bgm = document.getElementById("bgm");
+  const birthdayMessage = document.getElementById("birthdayMessage");
+  let currentEnvelope = 1;
+  let isTextOpen = false;
+
+  // Envelope content
+  const envelopeContents = {
+    1: "那時候，我並不認識你們，\n不管是你，尤指紋，邱柏松，\n隨便，反正就是現在的你們，我忘記甚麼原因，\n你們跑到我們學辦休息，\n你那天很認真的在玩阿邦的九連環，我對你的第一印象就是，\n哇，好怪，好好笑，好酷的一個人喔，如果能認識一定很有趣吧？\n所以我其實在那時候心中就決定：「我一定一定要好好認識你們！」\n誰知道，你們剛好在玩俄羅斯方塊，讓我也剛好多了些共同話題，\n也算是順利跟你們搭上話了，超好笑當然也要謝謝軒軒，\n也謝謝你們不覺得我是個什麼怪咖。",
+    2: "我記得我們是10月才確實認識的吧，應該是，\n啥阿莫名其妙也半年了，好，不重要，\n那段時間，我遇上了你們在練迎新，也遇上了我調酒社被廢除，\n那時很焦慮的我幾乎每天都會去找小杰聊聊天，也因為這樣，我每天在旁邊看你們練舞，練棍，偶爾的聊聊天，那段時間真的很快樂，\n我大大的脫離了調酒社被廢社的焦慮，那時候的我很羨慕你們有一個這麼有趣的團體，不像調酒社這樣分崩離析，所以看到你們讓我感覺看到了大學中的下一個重心。\n10/24我拿了一包麥當勞的獵人卡包給你 五成 小杰抽了一人一張，說實話那時候我就很在意你們了",
+    3: "我在這個月遇到了車禍，\n工作沒了，車也沒了，\n我心想：那好吧，我來專心的生活好了，\n從這個時候我的生活開始充滿著現在的你們，再加上聖誕的練舞，可以說大半的時間都需要你們在了，\n還記得這個月你叫我們去玩極速快感，玩的老瘋了，那時候真的很多很好笑的回憶",
+    4: "12/17聖誕活動日，12/24國粹，12/28一起騎去鹿港，\n這是最充實的一個月，最多回憶的一個月，\n我到現在還是會很懷念那段時間，很累很累，但很快樂！",
+    5: "永遠不會忘記跨年那天，\n一起在學辦用投影機看直播，衝出去看煙火甚麼都沒看見，再去望高寮看日出走錯路錯過，\n軒軒還被開了罰單，一個很多錯誤的跨年，但卻因為有你們在，好像也沒那麼糟糕ㄌ。\n1/4送你的結算大禮包你要收好！我超少送人禮物的，\n但，不知道，那時候看到你在中友看到那個盲盒好像蠻喜歡，但你沒買，\n我後來發現那個版本已經快下架了，我就在想如果今天是我一定會想把他蒐集回來，所以就偷偷買給你ㄌ。\n結果現在你生日了，我反而給不出東西:/",
+    6: "從二月開始，好像習慣了你們的存在，\n一種很明顯心態上的改變，我開始對你們的得失心變很重，\n但我並不認為這是好事，於是自己心態上出現了些障礙吧？\n讓我一直感覺出現了些距離，我很努力在消化他了，到現在也是，但我真的還是很在意你們，\nㄣ。",
+    7: "這時候我遇到了好多好多事，好忙，真的好忙，\n好想找你們，但又常常對不上時間，\n也因為我在其他地方遇到了一些很難受的事，那段時間很低落很低落，\n也不知道該怎麼辦，好像只能遠遠的看著你們，我其實很害怕在這個三月我就和你們漸行漸遠了，\n謝謝你們沒有離開我",
+    8: "感覺短短幾句話，就講到現在了，希望慶生的驚喜會順利讓你被嚇到，也希望身為壽星的你能開開心心的過完4/25，很抱歉現在不能給你更好的禮物，創業讓我經濟上變得非常非常拮据，我只能用這種方式，希望你不嫌棄！",
+    9: "這封信，是單純要給你的，\n在我的心中，你一直是一個很特別的人，感覺很認真、很有趣也很聰明，感覺甚麼事都影響不太到你嗎？\n也不知道是不是你單純沒說而已，但你一直給我一種，你是一個很優秀的人的感覺，\n我可能學得很雜，但沒有一項的用心程度是能跟你比擬的，\n我很羨慕，非常羨慕能夠認真做事的你，\n所以，我不知道，我一直心想如果我能在你還沒接觸到的地方多多少少幫到你，你會不會很快就能在那方面得到成就，\n如果你之後變成一個很厲害的人，那我一定會覺得很開心?這樣講好怪，但好像也只能這樣講ㄌ。\n反正，在我的世界裡，你對我真的有很高的地位，ㄣ，\n所以不要拒絕我ㄉ好意了:/除非你很討厭我",
+    10: "最後最後，回歸主題。\n祝你生日快樂！"
+  };
+
+  input.addEventListener("keyup", function(event) {
+    if (input.value === correctPassword) {
+      document.getElementById("lockText").classList.add("fade-out");
+      document.getElementById("lockSub").classList.add("fade-out");
+      input.classList.add("fade-out");
+      setTimeout(() => {
+        lockScreen.style.display = "none";
+        mainScene.style.display = "block";
+        mainScene.classList.add("fade-in");
+        bgm.play().catch(error => {
+          console.log("Autoplay prevented. Music will play on user interaction.");
+        });
+      }, 1000);
+    } else if (input.value === easterEggPassword) {
+      easterEgg.classList.add("show");
+      setTimeout(() => {
+        easterEgg.classList.remove("show");
+        input.value = "";
+      }, 3000);
+    }
+  });
+
+  function updateDepthClasses() {
+    for (let i = 1; i <= 10; i++) {
+      const book = document.getElementById(`book${i}`);
+      if (book.style.display === "none") continue;
+      book.classList.remove("active", "depth-1", "depth-2", "depth-3", "depth-4", "faded", "active-faded", "appear");
+      if (i === currentEnvelope) {
+        book.classList.add("active");
+        book.style.pointerEvents = "auto";
+      } else if (i === currentEnvelope + 1) {
+        book.classList.add("depth-1");
+      } else if (i === currentEnvelope + 2) {
+        book.classList.add("depth-2");
+      } else if (i === currentEnvelope + 3) {
+        book.classList.add("depth-3");
+      } else {
+        book.classList.add("depth-4");
+      }
+    }
+  }
+
+  function openText(index) {
+    if (index === currentEnvelope && !isTextOpen) {
+      isTextOpen = true;
+      const book = document.getElementById(`book${index}`);
+      const rect = book.getBoundingClientRect();
+      const text = envelopeContents[index] || `信封 ${index}`;
+      const words = text.split(/(\s+)/); // Split by whitespace, preserving spaces
+
+      // Inject text as spans
+      textInner.innerHTML = words.map((word, idx) =>
+        word.trim() === '' ?
+          `<span style="--rand-x: ${Math.random()}; --rand-y: ${Math.random()}; --rand-rot: ${Math.random() * 360};"> </span>` :
+          `<span style="--rand-x: ${Math.random()}; --rand-y: ${Math.random()}; --rand-rot: ${Math.random() * 360};">${word}</span>`
+      ).join('');
+
+      // Position spans at envelope's center
+      const spans = textInner.querySelectorAll("span");
+      spans.forEach(span => {
+        span.style.transform = `translate(${rect.left + rect.width/2 - window.innerWidth/2}px, ${rect.top + rect.height/2 - window.innerHeight/2}px) scale(0)`;
+        span.style.opacity = '0';
+      });
+
+      // Show text and hint
+      textInner.classList.add("show");
+      closeHint.classList.add("show");
+
+      // Fade all envelopes
+      for (let i = 1; i <= 10; i++) {
+        const otherBook = document.getElementById(`book${i}`);
+        if (otherBook.style.display !== "none") {
+          if (i === currentEnvelope) {
+            otherBook.classList.add("active-faded");
+          } else {
+            otherBook.classList.add("faded");
+          }
+        }
+      }
+
+      // Trigger burst animation
+      setTimeout(() => {
+        spans.forEach((span, i) => {
+          span.style.animationDelay = `${i * 0.02}s`;
+        });
+      }, 50);
+    }
+  }
+
+  function closeText() {
+    if (isTextOpen) {
+      isTextOpen = false;
+      textInner.classList.add("closing");
+      closeHint.classList.remove("show");
+
+      // Wait for scatterOut animation to complete
+      setTimeout(() => {
+        textInner.classList.remove("show", "closing");
+        textInner.innerHTML = "";
+        const book = document.getElementById(`book${currentEnvelope}`);
+        book.classList.remove("active", "active-faded");
+        book.classList.add("fly-away");
+        setTimeout(() => {
+          book.style.display = "none";
+          if (currentEnvelope < 10) {
+            currentEnvelope++;
+            const nextBook = document.getElementById(`book${currentEnvelope}`);
+            nextBook.classList.remove("depth-1");
+            nextBook.classList.add("active", "appear");
+            nextBook.style.pointerEvents = "auto";
+            updateDepthClasses();
+          } else {
+            // Show birthday message after the last envelope
+            birthdayMessage.classList.add("show");
+          }
+        }, 1000); // Match flyAway animation duration
+      }, 1500); // Match scatterOut animation duration
+    }
+  }
+
+  // Handle click to close text
+  mainScene.addEventListener("click", function(event) {
+    if (isTextOpen && event.target.classList.contains("main-scene")) {
+      closeText();
+    }
+  });
+
+  // Initial depth setup
+  updateDepthClasses();
+</script>
+
+</body>
+</html>
